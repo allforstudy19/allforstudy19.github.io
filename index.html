@@ -4,11 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>单词练习工具</title>
-<link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="white">
 <meta name="apple-mobile-web-app-title" content="单词练习">
-<link rel="apple-touch-icon" href="icon.png">
 <style>
 * {
   box-sizing: border-box;
@@ -38,7 +36,7 @@ body {
   display: inline-block;
   background: #007AFF;
   color: #ffffff;
-  font-family: "幼圆", "Microsoft YaHei", sans-serif;
+  font-family: system-ui, sans-serif;
   font-size: 14px;
   padding: 6px 14px;
   border-radius: 999px;
@@ -46,7 +44,7 @@ body {
   margin-bottom: 14px;
 }
 
-/* 中间大卡片：和底部长条同一套白色圆角 UI */
+/* 中间单词卡片，页面加载就可见 */
 .word-card {
   background: #ffffff;
   border-radius: 28px;
@@ -62,7 +60,6 @@ body {
   overflow: hidden;
 }
 
-/* 卡片滑动层 */
 .card-inner {
   width: 100%;
   display: flex;
@@ -103,23 +100,7 @@ body {
   line-height: 1.4;
 }
 
-.hint-text {
-  font-size: 20px;
-  color: #8e8e93;
-  margin-bottom: 12px;
-}
-
-.countdown-dot {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #007AFF;
-}
-
-/* 底部长条 */
+/* 底部操作栏 */
 .bottom-dock {
   position: fixed;
   left: 50%;
@@ -141,7 +122,7 @@ body {
   border: 1px solid #f0f0f3;
   border-radius: 16px;
   color: #007AFF;
-  font-family: "幼圆", "Microsoft YaHei", sans-serif;
+  font-family: system-ui, sans-serif;
   font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
@@ -176,7 +157,7 @@ body {
 
 .setting-item {
   padding: 14px 18px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: system-ui, sans-serif;
   color: #000000;
   font-size: 16px;
   border-bottom: 1px solid #f1f1f3;
@@ -209,7 +190,6 @@ body {
   color: #007AFF;
 }
 
-/* 气泡 */
 .chat-box {
   display: flex;
   flex-direction: column;
@@ -260,30 +240,17 @@ body {
   border-style: solid;
   border-color: transparent rgba(120, 120, 128, 0.12) transparent transparent;
 }
-
-.fullscreen-container:-webkit-full-screen {
-  background: #ffffff;
-}
-
-.fullscreen-container:-webkit-full-screen .mode-tag,
-.fullscreen-container:-webkit-full-screen .setting-panel,
-.fullscreen-container:-webkit-full-screen .bottom-dock {
-  display: none !important;
-}
 </style>
 </head>
 
 <body>
-<div class="fullscreen-container" id="fullWrap">
-  <div class="app-wrap">
-    <div class="mode-tag" id="modeTag">准备开始</div>
-
-    <div class="word-card" id="wordCard">
-      <div class="countdown-dot" id="countdownDot"></div>
-      <div class="card-inner" id="cardInner">
-        <div id="wordTextDisplay">准备开始</div>
-        <div id="answerTip"></div>
-      </div>
+<div class="app-wrap">
+  <div class="mode-tag" id="modeTag">准备开始</div>
+  <!-- 页面一加载就出现的中间白色圆角卡片 -->
+  <div class="word-card" id="wordCard">
+    <div class="card-inner" id="cardInner">
+      <div id="wordTextDisplay">准备开始</div>
+      <div id="answerTip"></div>
     </div>
   </div>
 </div>
@@ -318,14 +285,12 @@ const wordCard = document.getElementById("wordCard");
 const cardInner = document.getElementById("cardInner");
 const wordTextDisplay = document.getElementById("wordTextDisplay");
 const answerTip = document.getElementById("answerTip");
-const countdownDot = document.getElementById("countdownDot");
 const settingBtn = document.getElementById("settingBtn");
 const settingPanel = document.getElementById("settingPanel");
 const importWordItem = document.getElementById("importWord");
 const importBlock = document.getElementById("importBlock");
 const wordInput = document.getElementById("wordInput");
 const fileUpload = document.getElementById("fileUpload");
-const fullWrap = document.getElementById("fullWrap");
 
 const startBtn = document.getElementById("startBtn");
 const lastBtn = document.getElementById("lastBtn");
@@ -402,13 +367,11 @@ fileUpload.onchange = function (e) {
 function resetDisplay() {
   clearTimeout(answerTimer);
   answerTip.textContent = "";
-  answerTip.className = "";
   answerShown = false;
 }
 
 function showCardAfterAnimation(direction, callback) {
   cardInner.classList.add(direction === "next" ? "fly-left" : "fly-right");
-
   setTimeout(() => {
     callback();
     cardInner.classList.remove("fly-left", "fly-right");
@@ -417,16 +380,11 @@ function showCardAfterAnimation(direction, callback) {
 
 function loadWord(direction = "next") {
   resetDisplay();
-
   if (currentWordIndex >= wordList.length) {
     finishPractice();
     return;
   }
-
-  if (currentWordIndex < 0) {
-    currentWordIndex = 0;
-  }
-
+  if (currentWordIndex < 0) currentWordIndex = 0;
   const w = wordList[currentWordIndex];
 
   showCardAfterAnimation(direction, () => {
@@ -434,28 +392,21 @@ function loadWord(direction = "next") {
       wordTextDisplay.textContent = "准备听并写";
       answerTip.textContent = "";
       speakText(w.en);
-
       answerTimer = setTimeout(() => {
         wordTextDisplay.textContent = w.en;
         answerTip.innerHTML = renderMeaning(w.cn);
         answerShown = true;
       }, 5000);
-    }
-
-    if (gameMode === "sayChinese") {
+    } else if (gameMode === "sayChinese") {
       wordTextDisplay.textContent = w.en;
       answerTip.textContent = "";
-
       answerTimer = setTimeout(() => {
         answerTip.innerHTML = renderMeaning(w.cn);
         answerShown = true;
       }, 5000);
-    }
-
-    if (gameMode === "sayEnglish") {
+    } else if (gameMode === "sayEnglish") {
       wordTextDisplay.innerHTML = `<span>${renderMeaning(w.cn)}</span>`;
       answerTip.textContent = "";
-
       answerTimer = setTimeout(() => {
         wordTextDisplay.textContent = w.en;
         answerShown = true;
@@ -479,7 +430,6 @@ function goLast() {
 function finishPractice() {
   isRunning = false;
   resetDisplay();
-
   wordTextDisplay.innerHTML = `
     <div class="chat-box">
       <div class="bubble-right">Well, I've finished.</div>
@@ -502,20 +452,14 @@ startBtn.onclick = () => {
 
 lastBtn.onclick = goLast;
 nextBtn.onclick = goNext;
-
 finishBtn.onclick = () => {
-  if (isRunning) {
-    finishPractice();
-  }
+  if (isRunning) finishPractice();
 };
 
 fullBtn.onclick = async () => {
   try {
-    if (!document.fullscreenElement) {
-      await fullWrap.requestFullscreen();
-    } else {
-      await document.exitFullscreen();
-    }
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
   } catch (e) {
     alert("全屏切换失败");
   }
@@ -527,11 +471,10 @@ document.addEventListener("click", (e) => {
   }
 });
 
-/* 卡片左滑右滑 */
+// 卡片左右滑动手势
 let startX = 0;
 let currentX = 0;
 let dragging = false;
-
 wordCard.addEventListener("touchstart", e => {
   startX = e.touches[0].clientX;
   dragging = true;
@@ -549,15 +492,9 @@ wordCard.addEventListener("touchend", () => {
   if (!dragging) return;
   dragging = false;
   cardInner.classList.remove("dragging");
-
   const diff = currentX - startX;
-
-  if (diff < -60) {
-    goNext();
-  } else if (diff > 60) {
-    goLast();
-  }
-
+  if (diff < -60) goNext();
+  else if (diff > 60) goLast();
   setTimeout(() => {
     cardInner.style.transform = "";
   }, 320);
