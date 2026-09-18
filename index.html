@@ -1,252 +1,668 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>EASYWORD</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>单词练习工具</title>
+<!-- PWA 配置 -->
 <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="white">
+<meta name="apple-mobile-web-app-title" content="单词练习">
+<link rel="apple-touch-icon" href="icon.png">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
-body{background:#ffffff;padding-bottom:90px;min-height:100vh;}
-.container{padding:20px;max-width:700px;margin:0 auto;}
-.title{text-align:center;margin-bottom:24px;font-size:28px;color:#222;}
-.mode-select{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
-.mode-btn{padding:14px;border-radius:12px;border:none;background:#e8edf7;font-size:16px;cursor:pointer;transition:0.2s;}
-.mode-btn.active{background:#2563eb;color:white;}
-.card{background:#ffffff;border-radius:18px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:20px;}
-.word-text{font-size:36px;text-align:center;margin:16px 0;}
-.meaning-text{line-height:1.6;margin:10px 0;text-align:center;}
-/* SAY ENGLISH 汉字缩小字号 */
-.say-eng-meaning{font-size:18px;}
-/* LISTEN&SAY 中文释义放大一号 */
-.listen-meaning{font-size:40px;}
-/* 答对绿色，答错橙色 */
-.correct{color:#22a75d;}
-.wrong{color:#f27c22;}
-/* 对话气泡样式 */
-.chat-box{display:flex;flex-direction:column;gap:12px;margin:20px 0;}
-.bubble-left{align-self:flex-start;background:#87CEEB;color:#000;padding:10px 14px;border-radius:16px;max-width:70%;}
-.bubble-right{align-self:flex-end;background:rgba(200,200,200,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:10px 14px;border-radius:16px;max-width:70%;}
-/* Mac风格半透明底部栏 */
-.bottom-bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,0.4);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);padding:14px 20px;display:flex;gap:10px;justify-content:center;}
-.bottom-btn{padding:10px 18px;border-radius:10px;border:none;background:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: #ffffff;
+  min-height: 100vh;
+  padding-bottom: 110px;
+}
+
+.app-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.mode-tag {
+  display: inline-block;
+  background: #0099ff;
+  color: #ffffff;
+  font-family: "幼圆", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.bottom-dock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 8px 10px;
+  display: flex;
+  gap: 6px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+}
+
 /* 设置面板缩窄，自适应内容宽度 */
-.setting-panel{position:fixed;top:0;right:0;height:100%;background:white;padding:24px;width:fit-content;max-width:90%;box-shadow:-4px 0 20px rgba(0,0,0,0.1);transform:translateX(100%);transition:transform 0.3s;z-index:99;}
-.setting-panel.open{transform:translateX(0);}
-.setting-item{margin-bottom:16px;display:flex;gap:8px;align-items:center;white-space:nowrap;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);display:none;z-index:98;}
-.overlay.show{display:block;}
-/* SPELL WORDS 小写字母 */
-.spell-input{text-transform:lowercase;text-align:center;font-size:28px;padding:10px;width:100%;border:2px solid #ddd;border-radius:12px;margin:12px 0;outline:none;}
-.mic-btn{width:80px;height:80px;border-radius:50%;border:none;background:#2563eb;color:white;font-size:28px;margin:12px auto;display:block;cursor:pointer;}
+.setting-panel {
+  position: fixed;
+  bottom: calc(16px + 56px + 8px);
+  width: fit-content;
+  max-width:90vw;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  overflow: hidden;
+  display: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+}
+
+.setting-panel.show {
+  display: block;
+}
+
+.setting-item {
+  padding: 12px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  color: #000000;
+  font-size: 16px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.import-area {
+  padding: 12px 16px;
+}
+
+.import-area textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+.import-area input[type="file"] {
+  font-size: 13px;
+}
+
+.word-container {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+#wordTextDisplay {
+  font-size: clamp(42px,18vw,120px);
+  color: #000000;
+  font-weight: normal;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  transition: color 0.25s ease;
+}
+#wordTextDisplay.orange {
+  color:#ff7800;
+}
+#wordTextDisplay.green {
+  color:#22c55e;
+}
+
+#answerTip {
+  margin-top:12px;
+  font-size: clamp(18px,5vw,28px);
+  color:#000000;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+/* LISTEN&SAY 中文释义放大一号 */
+.answer-listen-meaning{
+  font-size: clamp(24px,7vw,36px);
+}
+/* SAY ENGLISH初始汉字缩小 */
+.cn2en-init-text{
+  font-size: clamp(32px,12vw,80px);
+}
+/* 对话气泡样式 */
+.chat-box{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin:20px 0;
+  width:100%;
+}
+.bubble-left{
+  align-self:flex-start;
+  background:#87CEEB;
+  color:#000;
+  padding:10px 14px;
+  border-radius:16px;
+  max-width:70%;
+}
+.bubble-right{
+  align-self:flex-end;
+  background:rgba(200,200,200,0.45);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  padding:10px 14px;
+  border-radius:16px;
+  max-width:70%;
+}
+.dock-btn {
+  width: 52px;
+  height: 52px;
+  background: #ffffff;
+  border: none;
+  border-radius: 12px;
+  color: #0099ff;
+  font-family: "幼圆", "Microsoft YaHei", sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.dock-btn:active {
+  transform: scale(1.08);
+}
+
+.fullscreen-container:-webkit-full-screen {
+  background: #ffffff;
+}
+.fullscreen-container:-webkit-full-screen .mode-tag,
+.fullscreen-container:-webkit-full-screen .setting-panel,
+.fullscreen-container:-webkit-full-screen .bottom-dock {
+  display: none !important;
+}
+.fullscreen-container:-webkit-full-screen .word-container {
+  min-height: 100vh;
+}
 </style>
 </head>
+
 <body>
-<div class="container">
-<h1 class="title">EASYWORD</h1>
-<div class="mode-select">
-<button class="mode-btn" data-mode="read">READ WORDS</button>
-<button class="mode-btn" data-mode="saycn">SAY CHINESE</button>
-<button class="mode-btn" data-mode="sayen">SAY ENGLISH</button>
-<button class="mode-btn" data-mode="listen">LISTEN&SAY</button>
-<button class="mode-btn" data-mode="spell">SPELL WORDS</button>
-</div>
-<div class="card" id="mainCard">
-<div id="content"></div>
-</div>
+<div class="fullscreen-container" id="fullWrap">
+  <div class="app-wrap">
+    <div class="mode-tag" id="modeTag">准备开始</div>
+
+    <div class="word-container">
+      <div id="wordTextDisplay">准备开始</div>
+      <div id="answerTip"></div>
+    </div>
+  </div>
 </div>
 
-<!-- 设置面板 -->
-<div class="overlay" id="overlay"></div>
 <div class="setting-panel" id="settingPanel">
-<h3 style="margin-bottom:20px;">设置</h3>
-<div class="setting-item">
-<input type="checkbox" id="soundSwitch">
-<label for="soundSwitch">提示音</label>
-</div>
-<button class="bottom-btn" id="closeSetting">关闭</button>
+  <div class="setting-item" id="importWord">导入单词</div>
+  <div class="setting-item" data-mode="read">READ WORDS</div>
+  <div class="setting-item" data-mode="en2cn">SAY CHINESE</div>
+  <div class="setting-item" data-mode="cn2en">SAY ENGLISH</div>
+  <div class="setting-item" data-mode="listenSay">LISTEN&SAY</div>
+  <div class="setting-item" data-mode="spell">SPELL WORDS</div>
+  <div class="setting-item">
+    <input type="checkbox" id="soundSwitch" checked>
+    <label for="soundSwitch">提示音</label>
+  </div>
+  <div class="import-area" id="importBlock">
+    <textarea id="wordInput">apple,苹果|苹果树
+banana,香蕉
+cat,猫
+dog,狗
+book,书</textarea>
+    <input type="file" id="fileUpload" accept=".txt" />
+  </div>
 </div>
 
-<!-- 底部Mac半透明栏 -->
-<div class="bottom-bar">
-<button class="bottom-btn" id="settingBtn">设置</button>
-<button class="bottom-btn" id="nextBtn">下一个</button>
+<div class="bottom-dock" id="dockWrap">
+  <button class="dock-btn" id="startBtn">START</button>
+  <button class="dock-btn" id="pauseBtn">PAUSE</button>
+  <button class="dock-btn" id="stopBtn">STOP</button>
+  <button class="dock-btn" id="againBtn">AGAIN</button>
+  <button class="dock-btn" id="scoreBtn">SCORE</button>
+  <button class="dock-btn" id="fullBtn">全屏</button>
+  <button class="dock-btn" id="settingBtn">设置</button>
 </div>
 
 <script>
-// ========== 单词库示例，你可以继续扩充 ==========
-const wordList = [
-  {en:"apple",cn:"苹果；苹果树"},
-  {en:"banana",cn:"香蕉；芭蕉树"},
-  {en:"cat",cn:"猫；猫咪"},
-  {en:"dog",cn:"狗；小狗"},
-  {en:"book",cn:"书；书籍"},
-];
-let currentMode = "read";
-let currentIndex = 0;
-let soundOn = true;
-const contentEl = document.getElementById("content");
+const modeTag = document.getElementById("modeTag");
+const settingBtn = document.getElementById("settingBtn");
+const settingPanel = document.getElementById("settingPanel");
+const importWordItem = document.getElementById("importWord");
+const importBlock = document.getElementById("importBlock");
+const wordInput = document.getElementById("wordInput");
+const fileUpload = document.getElementById("fileUpload");
+const wordTextDisplay = document.getElementById("wordTextDisplay");
+const answerTip = document.getElementById("answerTip");
+const fullWrap = document.getElementById("fullWrap");
+const dockWrap = document.getElementById("dockWrap");
 const soundSwitch = document.getElementById("soundSwitch");
-soundSwitch.checked = true;
-soundSwitch.addEventListener("change",e=>soundOn = e.target.checked);
+let soundOn = true;
+soundSwitch.addEventListener("change", e=> soundOn = e.target.checked);
 
-// 音频资源：苹果怪诞 / 欢迎提示音
+const startBtn = document.getElementById("startBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const stopBtn = document.getElementById("stopBtn");
+const againBtn = document.getElementById("againBtn");
+const scoreBtn = document.getElementById("scoreBtn");
+const fullBtn = document.getElementById("fullBtn");
+
+// 音效
 const audioCorrect = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3");
 const audioFinish = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3");
 function playSound(audioObj){
   if(soundOn){
-    audioObj.currentTime=0;
+    audioObj.currentTime = 0;
     audioObj.play().catch(e=>{});
   }
 }
 
-// 渲染释义，多个释义一行一个
-function renderMeaning(str){
-  return str.split(";").map(item=>item.trim()).join("<br>");
+let wordList = [];
+let currentWordIndex = 0;
+let currentTry = 0;
+let gameMode = "read";
+let isRunning = false;
+let isPaused = false;
+let spellBuffer = "";
+let recognition = null;
+let isListening = false;
+
+const modeNames = {
+  read: "READ WORDS",
+  en2cn: "SAY CHINESE",
+  cn2en: "SAY ENGLISH",
+  listenSay: "LISTEN&SAY",
+  spell: "SPELL WORDS"
+};
+
+// 释义渲染，| 转为换行
+function renderMeaning(cnArr){
+  return cnArr.join("<br>");
 }
 
-// 切换模式
-document.querySelectorAll(".mode-btn").forEach(btn=>{
-  btn.onclick = ()=>{
-    document.querySelectorAll(".mode-btn").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    currentMode = btn.dataset.mode;
-    currentIndex = 0;
-    renderWord();
-  }
+function updateDockSize() {
+  const rect = dockWrap.getBoundingClientRect();
+  settingPanel.style.left = `${rect.right - settingPanel.offsetWidth}px`;
+}
+updateDockSize();
+window.addEventListener('resize', updateDockSize);
+window.addEventListener('orientationchange', ()=>{
+  setTimeout(updateDockSize,100);
 });
 
-// 渲染单词逻辑
-function renderWord(){
-  const w = wordList[currentIndex];
-  let html = "";
-  switch(currentMode){
-    case "read":
-      html = `<div class="word-text">${w.en}</div><div class="meaning-text" id="readMeaning"></div>`;
-      break;
-    case "saycn":
-      html = `<div class="word-text">${w.en}</div><div class="meaning-text" id="showMeaning"></div><button class="mic-btn" onclick="startRecognition()">🎤</button>`;
-      break;
-    case "sayen":
-      html = `<div class="word-text" id="sayEnWord"></div><div class="meaning-text say-eng-meaning" id="sayEnMeaning"></div><button class="mic-btn" onclick="startRecognition()">🎤</button>`;
-      break;
-    case "listen":
-      html = `<div class="word-text" id="listenWord"></div><div class="meaning-text listen-meaning" id="listenMeaning"></div><button class="mic-btn" onclick="startRecognition()">🎤</button>`;
-      break;
-    case "spell":
-      html = `<div class="word-text">拼写出单词</div><input class="spell-input" id="spellInput" placeholder="输入英文" oninput="spellCheck(this.value)" autocomplete="off"><div id="spellResult"></div>`;
-      document.getElementById("spellInput").focus();
-      break;
-  }
-  contentEl.innerHTML = html;
+settingBtn.onclick = () => {
+  updateDockSize();
+  settingPanel.classList.toggle("show");
+};
+
+importWordItem.onclick = () => {
+  importBlock.style.display = importBlock.style.display === "none" ? "block" : "none";
+};
+
+document.querySelectorAll(".setting-item[data-mode]").forEach(item => {
+  item.onclick = () => {
+    gameMode = item.dataset.mode;
+    modeTag.textContent = modeNames[gameMode];
+    settingPanel.classList.remove("show");
+    resetDisplay();
+  };
+});
+
+function resetDisplay() {
+  wordTextDisplay.classList.remove("orange", "green");
+  wordTextDisplay.style.color = "#000000";
+  answerTip.textContent = "";
+  answerTip.className = "";
+  spellBuffer = "";
+  currentTry = 0;
+  stopRecognition();
 }
 
-// 语音识别（即时反应）
-let recognition;
-if(window.webkitSpeechRecognition){
-  recognition = new webkitSpeechRecognition();
-  recognition.continuous = false;
+function parseWords() {
+  const lines = wordInput.value.trim().split("\n");
+  const arr = [];
+  lines.forEach(line => {
+    const sp = line.split(/[,，]/);
+    if (sp.length >= 2) {
+      const cnArr = sp[1].trim().split(/[|｜]/).map(s => s.trim());
+      arr.push({
+        en: sp[0].trim(),
+        cn: cnArr
+      });
+    }
+  });
+  return arr;
+}
+
+fileUpload.onchange = function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    wordInput.value = evt.target.result;
+  };
+  reader.readAsText(file);
+};
+
+function speakText(text) {
+  if (!("speechSynthesis" in window)) {
+    alert("浏览器不支持语音朗读");
+    return;
+  }
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function stopRecognition() {
+  isListening = false;
+  if (recognition) {
+    try { recognition.stop(); } catch (e) {}
+    recognition = null;
+  }
+}
+
+function startRecognition(lang, onResultCallback) {
+  if (isListening) return;
+  if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+    alert("当前浏览器不支持语音识别！苹果手机必须把网页添加到主屏幕PWA并且HTTPS访问");
+    return;
+  }
+  stopRecognition();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = lang;
   recognition.interimResults = false;
-  recognition.lang = "zh-CN";
-  recognition.onresult = (e)=>{
-    const res = e.results[0][0].transcript.trim().toLowerCase();
-    judgeAnswer(res);
-  }
-}
-function startRecognition(){
-  if(!recognition) return alert("浏览器不支持语音识别");
-  recognition.start();
-}
+  recognition.maxAlternatives = 1;
+  isListening = true;
 
-// 答案判断
-function judgeAnswer(userInput){
-  const w = wordList[currentIndex];
-  let ok = false;
-  if(currentMode === "read"){
-    ok=true;
-    contentEl.querySelector("#readMeaning").innerHTML = `<span class="correct">${renderMeaning(w.cn)}</span>`;
-    playSound(audioCorrect);
-    setTimeout(nextWord, 600);
-  }else if(currentMode === "saycn"){
-    ok = userInput.includes(w.cn.split(";")[0].trim());
-    if(ok){
-      contentEl.querySelector("#showMeaning").innerHTML = `<span class="correct">${renderMeaning(w.cn)}</span>`;
-      playSound(audioCorrect);
-    }else{
-      contentEl.querySelector("#showMeaning").innerHTML = `<span class="wrong">回答错误</span>`;
-    }
-  }else if(currentMode === "sayen"){
-    ok = userInput === w.en.toLowerCase();
-    if(ok){
-      contentEl.querySelector("#sayEnWord").innerHTML = `<span class="correct">${w.en}</span>`;
-      contentEl.querySelector("#sayEnMeaning").innerHTML = `<span>${renderMeaning(w.cn)}</span>`;
-      playSound(audioCorrect);
-    }else{
-      contentEl.querySelector("#sayEnWord").innerHTML = `<span class="wrong">${w.en}</span>`;
-    }
-  }else if(currentMode === "listen"){
-    ok = userInput === w.en.toLowerCase();
-    if(ok){
-      contentEl.querySelector("#listenWord").innerHTML = `<span class="correct">${w.en}</span>`;
-      contentEl.querySelector("#listenMeaning").innerHTML = `<span>${renderMeaning(w.cn)}</span>`;
-      playSound(audioCorrect);
-    }else{
-      contentEl.querySelector("#listenWord").innerHTML = `<span class="wrong">${w.en}</span>`;
-    }
-  }
-  if(ok && currentMode !== "read") setTimeout(nextWord, 600);
-}
+  recognition.onresult = function (event) {
+    const transcript = event.results[0][0].transcript.trim();
+    isListening = false;
+    onResultCallback(transcript);
+  };
 
-// SPELL WORDS 实时输入校验（全部小写）
-function spellCheck(val){
-  const w = wordList[currentIndex];
-  const lowVal = val.toLowerCase();
-  const resEl = document.getElementById("spellResult");
-  if(lowVal === w.en.toLowerCase()){
-    resEl.innerHTML = `<div class="word-text correct">${w.en}</div><div class="meaning-text">${renderMeaning(w.cn)}</div>`;
-    playSound(audioCorrect);
-    setTimeout(nextWord,600);
-  }else if(w.en.startsWith(lowVal)){
-    resEl.innerHTML = `<span style="color:#666">继续输入...</span>`;
-  }else{
-    resEl.innerHTML = `<span class="wrong">拼写不对</span>`;
+  recognition.onerror = function (e) {
+    console.log("语音识别错误：", e.error);
+    isListening = false;
+  };
+
+  recognition.onend = function () {
+    isListening = false;
+  };
+
+  try {
+    recognition.start();
+  } catch (err) {
+    isListening = false;
   }
 }
 
-// 下一题
-function nextWord(){
-  currentIndex++;
-  if(currentIndex >= wordList.length){
-    // 完成一组：对话气泡，播放完成音效
+function normalizeText(text) {
+  return text.toLowerCase().replace(/[.,!?\s]/g, "").trim();
+}
+
+function loadWord() {
+  resetDisplay();
+  if (currentWordIndex >= wordList.length) {
+    // 全部单词完成：替换对话气泡
     playSound(audioFinish);
-    contentEl.innerHTML = `
+    wordTextDisplay.innerHTML = `
       <div class="chat-box">
         <div class="bubble-left">Well, I've finished.</div>
         <div class="bubble-right">I knew it. You're the best.</div>
       </div>`;
-    currentIndex = 0;
+    answerTip.textContent = "";
+    isRunning = false;
     return;
   }
-  renderWord();
+  const w = wordList[currentWordIndex];
+  currentTry = 0;
+  switch (gameMode) {
+    case "read":
+      wordTextDisplay.textContent = w.en;
+      answerTip.textContent = "";
+      setTimeout(()=> startRecognition("en-US", checkRead), 200);
+      break;
+    case "en2cn":
+      wordTextDisplay.textContent = w.en;
+      answerTip.textContent = "";
+      setTimeout(()=> startRecognition("zh-CN", checkEn2Cn), 200);
+      break;
+    case "cn2en":
+      wordTextDisplay.textContent = "";
+      wordTextDisplay.innerHTML = `<span class="cn2en-init-text">${renderMeaning(w.cn)}</span>`;
+      answerTip.textContent = "";
+      setTimeout(()=> startRecognition("en-US", checkCn2En), 200);
+      break;
+    case "listenSay":
+      wordTextDisplay.textContent = "";
+      answerTip.textContent = "";
+      speakText(w.en);
+      setTimeout(()=> startRecognition("en-US", checkListenSay), 800);
+      break;
+    case "spell":
+      spellBuffer = "";
+      wordTextDisplay.textContent = "";
+      answerTip.textContent = "";
+      speakText(w.en);
+      setTimeout(()=> startRecognition("en-US", checkSpell),800);
+      break;
+  }
 }
 
-// 设置面板开关
-document.getElementById("settingBtn").onclick = ()=>{
-  document.getElementById("settingPanel").classList.add("open");
-  document.getElementById("overlay").classList.add("show");
+function checkRead(userSpeech) {
+  if (!isRunning || isPaused) return;
+  const w = wordList[currentWordIndex];
+  const input = normalizeText(userSpeech);
+  const target = normalizeText(w.en);
+  if(input === target){
+    wordTextDisplay.classList.add("green");
+    answerTip.innerHTML = `<span style="color:#22c55e">${renderMeaning(w.cn)}</span>`;
+    playSound(audioCorrect);
+    setTimeout(()=>{
+      currentWordIndex++;
+      loadWord();
+    },800);
+  }else{
+    wordTextDisplay.classList.add("orange");
+    setTimeout(()=> startRecognition("en-US", checkRead), 600);
+  }
+}
+
+function checkEn2Cn(userSpeech) {
+  if (!isRunning || isPaused) return;
+  const w = wordList[currentWordIndex];
+  const input = userSpeech.trim();
+  const correct = w.cn.some(item => input.includes(item));
+  if(correct){
+    wordTextDisplay.classList.add("green");
+    answerTip.innerHTML = `<span style="color:#22c55e">${renderMeaning(w.cn)}</span>`;
+    playSound(audioCorrect);
+    setTimeout(()=>{
+      currentWordIndex++;
+      loadWord();
+    },800);
+  }else{
+    wordTextDisplay.classList.add("orange");
+    setTimeout(()=> startRecognition("zh-CN", checkEn2Cn), 600);
+  }
+}
+
+function checkCn2En(userSpeech) {
+  if (!isRunning || isPaused) return;
+  const w = wordList[currentWordIndex];
+  const input = normalizeText(userSpeech);
+  const target = normalizeText(w.en);
+  if(input === target){
+    wordTextDisplay.classList.add("green");
+    wordTextDisplay.textContent = w.en;
+    answerTip.innerHTML = renderMeaning(w.cn);
+    playSound(audioCorrect);
+    setTimeout(()=>{
+      currentWordIndex++;
+      loadWord();
+    },800);
+  }else{
+    wordTextDisplay.classList.add("orange");
+    setTimeout(()=> startRecognition("en-US", checkCn2En), 600);
+  }
+}
+
+function checkListenSay(userSpeech) {
+  if (!isRunning || isPaused) return;
+  const w = wordList[currentWordIndex];
+  const input = normalizeText(userSpeech);
+  const target = normalizeText(w.en);
+  if(input === target){
+    wordTextDisplay.classList.add("green");
+    wordTextDisplay.textContent = w.en;
+    answerTip.className = "answer-listen-meaning";
+    answerTip.innerHTML = renderMeaning(w.cn);
+    playSound(audioCorrect);
+    setTimeout(()=>{
+      currentWordIndex++;
+      loadWord();
+    },1200);
+  }else{
+    speakText(w.en);
+    setTimeout(()=> startRecognition("en-US", checkListenSay), 800);
+  }
+}
+
+function checkSpell(userSpeech) {
+  if (!isRunning || isPaused) return;
+  const w = wordList[currentWordIndex];
+  const target = normalizeText(w.en);
+  const letter = normalizeText(userSpeech);
+  if(target.startsWith(spellBuffer + letter)){
+    spellBuffer += letter;
+    wordTextDisplay.textContent = spellBuffer.toLowerCase();
+    if(spellBuffer === target){
+      wordTextDisplay.classList.add("green");
+      answerTip.className = "answer-listen-meaning";
+      answerTip.innerHTML = renderMeaning(w.cn);
+      playSound(audioCorrect);
+      setTimeout(()=>{
+        currentWordIndex++;
+        loadWord();
+      },800);
+    }else{
+      setTimeout(()=> startRecognition("en-US", checkSpell),400);
+    }
+  }else{
+    wordTextDisplay.classList.add("orange");
+    setTimeout(()=> startRecognition("en-US", checkSpell), 600);
+  }
+}
+
+startBtn.onclick = () => {
+  wordList = parseWords();
+  if (wordList.length === 0) {
+    alert("请先导入单词！");
+    return;
+  }
+  isRunning = true;
+  isPaused = false;
+  currentWordIndex = 0;
+  modeTag.textContent = modeNames[gameMode];
+  loadWord();
 };
-document.getElementById("closeSetting").onclick = closeSetting;
-document.getElementById("overlay").onclick = closeSetting;
-function closeSetting(){
-  document.getElementById("settingPanel").classList.remove("open");
-  document.getElementById("overlay").classList.remove("show");
-}
-document.getElementById("nextBtn").onclick = nextWord;
 
-// 初始化
-renderWord();
+pauseBtn.onclick = () => {
+  isPaused = !isPaused;
+  if (isPaused) {
+    stopRecognition();
+    wordTextDisplay.textContent = "已暂停";
+    answerTip.textContent = "";
+  } else {
+    loadWord();
+  }
+};
+
+stopBtn.onclick = () => {
+  isRunning = false;
+  isPaused = false;
+  currentWordIndex = 0;
+  spellBuffer = "";
+  stopRecognition();
+  modeTag.textContent = "准备开始";
+  wordTextDisplay.textContent = "准备开始";
+  answerTip.textContent = "";
+};
+
+againBtn.onclick = () => {
+  currentWordIndex = 0;
+  spellBuffer = "";
+  loadWord();
+};
+
+scoreBtn.onclick = () => {
+  alert(`当前进度：${currentWordIndex} / ${wordList.length}`);
+};
+
+fullBtn.onclick = async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await fullWrap.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch (e) {
+    alert("全屏切换失败");
+  }
+};
+
+document.addEventListener("click", (e) => {
+  if (!settingPanel.contains(e.target) && e.target !== settingBtn) {
+    settingPanel.classList.remove("show");
+  }
+});
+
+document.body.onkeydown = function (e) {
+  if (e.key === "Enter" && isRunning && !isPaused) {
+    const ans = prompt("手动输入答案：");
+    if(ans === null) return;
+    switch(gameMode){
+      case "read": checkRead(ans); break;
+      case "en2cn": checkEn2Cn(ans); break;
+      case "cn2en": checkCn2En(ans); break;
+      case "listenSay": checkListenSay(ans); break;
+      case "spell": checkSpell(ans); break;
+    }
+  }
+};
+
+// PWA ServiceWorker注册
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js');
+  });
+}
 </script>
 </body>
 </html>
