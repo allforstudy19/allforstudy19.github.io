@@ -16,22 +16,22 @@
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
+
 html, body {
-  background-color: #ffffff !important;
+  background-color: #ffffff;
   min-height: 100vh;
-  background: #ffffff;
   overflow-x: hidden;
 }
 
 body {
-  padding-bottom: 110px;
-  background: #fff;
+  padding: 16px;
+  padding-bottom: 120px;
 }
 
 .app-wrap {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 16px;
+  padding-top: 8px;
 }
 
 .mode-tag {
@@ -40,192 +40,235 @@ body {
   color: #ffffff;
   font-family: "幼圆", "Microsoft YaHei", sans-serif;
   font-size: 14px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
   letter-spacing: 1px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-.bottom-dock {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 16px;
+/* 中间大卡片：和底部长条同一套白色圆角 UI */
+.word-card {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 8px 10px;
-  display: flex;
-  gap: 6px;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
-}
-
-/* ========== 设置面板 ========== */
-.setting-panel {
-  position: fixed;
-  bottom: calc(16px + 56px + 8px);
-  right: 16px;
-  width: 220px;
-  max-width: 86vw;
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 14px;
-  overflow: hidden;
-  display: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-}
-.setting-panel.show {
-  display: block;
-}
-.setting-item {
-  padding: 12px 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  color: #000000;
-  font-size: 16px;
-  border-bottom: 1px solid #f1f1f1;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.setting-item:last-child {
-  border-bottom: none;
-}
-
-.import-area {
-  padding: 12px 16px;
-}
-.import-area textarea {
-  width: 100%;
-  height: 100px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 14px;
-  outline: none;
-  margin-bottom: 8px;
-}
-.import-area input[type="file"] {
-  font-size: 13px;
-}
-
-.word-container {
+  border-radius: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 48px 20px;
   min-height: 60vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-/* 卡片切换动画 */
-.card-wrap {
-  transition: all 0.35s ease;
-  opacity: 1;
-  transform: translateY(0px);
+/* 卡片滑动层 */
+.card-inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  will-change: transform;
 }
-.card-wrap.fade-out {
+
+.card-inner.dragging {
+  transition: none;
+}
+
+.card-inner.fly-left {
+  transform: translateX(-120%) rotate(-3deg);
   opacity: 0;
-  transform: translateY(12px);
+}
+
+.card-inner.fly-right {
+  transform: translateX(120%) rotate(3deg);
+  opacity: 0;
 }
 
 #wordTextDisplay {
-  font-size: clamp(42px,18vw,120px);
+  font-size: clamp(40px, 11vw, 96px);
   color: #000000;
-  font-weight: normal;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-}
-#answerTip {
-  margin-top:12px;
-  font-size: clamp(18px,5vw,28px);
-  color:#000000;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-}
-.answer-listen-meaning{
-  font-size: clamp(24px,7vw,36px);
-}
-.cn2en-init-text{
-  font-size: clamp(32px,12vw,80px);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.2;
 }
 
-/* ========== 聊天气泡样式，带尖角 ========== */
-.chat-box{
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-  margin:20px 0;
-  width:100%;
-  padding:0 10px;
+#answerTip {
+  margin-top: 16px;
+  font-size: clamp(20px, 5vw, 32px);
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  line-height: 1.4;
 }
-/* 右侧 用户气泡：苹果天蓝色，微信尖角 */
-.bubble-right{
-  position:relative;
-  align-self:flex-end;
-  background:#007AFF;
-  color:#fff;
-  padding:10px 14px;
-  border-radius:16px 4px 16px 16px;
-  max-width:70%;
+
+.hint-text {
+  font-size: 20px;
+  color: #8e8e93;
+  margin-bottom: 12px;
 }
-.bubble-right::after{
-  content:"";
-  position:absolute;
-  right:-8px;
-  bottom:0px;
-  border-width:8px 0 0 8px;
-  border-style:solid;
-  border-color: transparent transparent transparent #007AFF;
+
+.countdown-dot {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #007AFF;
 }
-/* 左侧 APP回复气泡：半透明磨砂，Mac Dock质感，尖角 */
-.bubble-left{
-  position:relative;
-  align-self:flex-start;
-  background:rgba(255,255,255,0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color:#000;
-  padding:10px 14px;
-  border-radius:4px 16px 16px 16px;
-  max-width:70%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.bubble-left::after{
-  content:"";
-  position:absolute;
-  left:-8px;
-  bottom:0px;
-  border-width:8px 8px 0 0;
-  border-style:solid;
-  border-color: transparent rgba(255,255,255,0.65) transparent transparent;
+
+/* 底部长条 */
+.bottom-dock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 16px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  z-index: 50;
 }
 
 .dock-btn {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   background: #ffffff;
-  border: 1px solid #eee;
-  border-radius: 12px;
+  border: 1px solid #f0f0f3;
+  border-radius: 16px;
   color: #007AFF;
   font-family: "幼圆", "Microsoft YaHei", sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, background 0.2s ease;
 }
 
 .dock-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
+  background: #f2f2f7;
+}
+
+/* 设置面板 */
+.setting-panel {
+  position: fixed;
+  bottom: calc(16px + 70px + 10px);
+  right: 16px;
+  width: 220px;
+  max-width: 86vw;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 18px;
+  overflow: hidden;
+  display: none;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.14);
+  z-index: 80;
+}
+
+.setting-panel.show {
+  display: block;
+}
+
+.setting-item {
+  padding: 14px 18px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  color: #000000;
+  font-size: 16px;
+  border-bottom: 1px solid #f1f1f3;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.import-area {
+  padding: 14px 18px;
+}
+
+.import-area textarea {
+  width: 100%;
+  height: 110px;
+  padding: 12px;
+  border: 1px solid #d2d2d7;
+  border-radius: 14px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 10px;
+  font-family: inherit;
+}
+
+.import-area input[type="file"] {
+  font-size: 13px;
+  color: #007AFF;
+}
+
+/* 气泡 */
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  padding: 10px;
+}
+
+.bubble-right {
+  position: relative;
+  align-self: flex-end;
+  background: #007AFF;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 18px 6px 18px 18px;
+  max-width: 72%;
+  font-size: 16px;
+}
+
+.bubble-right::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  bottom: 2px;
+  border-width: 8px 0 0 8px;
+  border-style: solid;
+  border-color: transparent transparent transparent #007AFF;
+}
+
+.bubble-left {
+  position: relative;
+  align-self: flex-start;
+  background: rgba(120, 120, 128, 0.12);
+  backdrop-filter: blur(10px);
+  color: #000;
+  padding: 12px 16px;
+  border-radius: 6px 18px 18px 18px;
+  max-width: 72%;
+  font-size: 16px;
+}
+
+.bubble-left::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  bottom: 2px;
+  border-width: 8px 8px 0 0;
+  border-style: solid;
+  border-color: transparent rgba(120, 120, 128, 0.12) transparent transparent;
 }
 
 .fullscreen-container:-webkit-full-screen {
   background: #ffffff;
 }
+
 .fullscreen-container:-webkit-full-screen .mode-tag,
 .fullscreen-container:-webkit-full-screen .setting-panel,
 .fullscreen-container:-webkit-full-screen .bottom-dock {
   display: none !important;
-}
-.fullscreen-container:-webkit-full-screen .word-container {
-  min-height: 100vh;
 }
 </style>
 </head>
@@ -235,8 +278,9 @@ body {
   <div class="app-wrap">
     <div class="mode-tag" id="modeTag">准备开始</div>
 
-    <div class="word-container" id="wordContainer">
-      <div class="card-wrap" id="cardWrap">
+    <div class="word-card" id="wordCard">
+      <div class="countdown-dot" id="countdownDot"></div>
+      <div class="card-inner" id="cardInner">
         <div id="wordTextDisplay">准备开始</div>
         <div id="answerTip"></div>
       </div>
@@ -263,39 +307,38 @@ book,书</textarea>
   <button class="dock-btn" id="startBtn">START</button>
   <button class="dock-btn" id="lastBtn">LAST</button>
   <button class="dock-btn" id="nextBtn">NEXT</button>
-  <button class="dock-btn" id="againBtn">AGAIN</button>
-  <button class="dock-btn" id="scoreBtn">SCORE</button>
+  <button class="dock-btn" id="finishBtn">FINISH</button>
   <button class="dock-btn" id="fullBtn">全屏</button>
   <button class="dock-btn" id="settingBtn">设置</button>
 </div>
 
 <script>
 const modeTag = document.getElementById("modeTag");
+const wordCard = document.getElementById("wordCard");
+const cardInner = document.getElementById("cardInner");
+const wordTextDisplay = document.getElementById("wordTextDisplay");
+const answerTip = document.getElementById("answerTip");
+const countdownDot = document.getElementById("countdownDot");
 const settingBtn = document.getElementById("settingBtn");
 const settingPanel = document.getElementById("settingPanel");
 const importWordItem = document.getElementById("importWord");
 const importBlock = document.getElementById("importBlock");
 const wordInput = document.getElementById("wordInput");
 const fileUpload = document.getElementById("fileUpload");
-const wordTextDisplay = document.getElementById("wordTextDisplay");
-const answerTip = document.getElementById("answerTip");
 const fullWrap = document.getElementById("fullWrap");
-const wordContainer = document.getElementById("wordContainer");
-const cardWrap = document.getElementById("cardWrap");
 
-// 音效
-const audioFinish = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3");
-const audioVlogHum = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-software-interface-warming-2568.mp3");
-function playSound(audioObj){
-  audioObj.currentTime = 0;
-  audioObj.play().catch(e=>{});
-}
+const startBtn = document.getElementById("startBtn");
+const lastBtn = document.getElementById("lastBtn");
+const nextBtn = document.getElementById("nextBtn");
+const finishBtn = document.getElementById("finishBtn");
+const fullBtn = document.getElementById("fullBtn");
 
 let wordList = [];
 let currentWordIndex = 0;
 let gameMode = "listenWrite";
 let isRunning = false;
-let timer = null;
+let answerTimer = null;
+let answerShown = false;
 
 const modeNames = {
   listenWrite: "LISTEN AND WRITE",
@@ -303,9 +346,17 @@ const modeNames = {
   sayEnglish: "SAY ENGLISH"
 };
 
-// 释义渲染，| 转为换行
-function renderMeaning(cnArr){
-  return cnArr.join("<br>");
+function renderMeaning(arr) {
+  return arr.join("<br>");
+}
+
+function speakText(text) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
 }
 
 settingBtn.onclick = () => {
@@ -325,12 +376,6 @@ document.querySelectorAll(".setting-item[data-mode]").forEach(item => {
   };
 });
 
-function resetDisplay() {
-  answerTip.textContent = "";
-  answerTip.className = "";
-  clearTimeout(timer);
-}
-
 function parseWords() {
   const lines = wordInput.value.trim().split("\n");
   const arr = [];
@@ -338,10 +383,7 @@ function parseWords() {
     const sp = line.split(/[,，]/);
     if (sp.length >= 2) {
       const cnArr = sp[1].trim().split(/[|｜]/).map(s => s.trim());
-      arr.push({
-        en: sp[0].trim(),
-        cn: cnArr
-      });
+      arr.push({ en: sp[0].trim(), cn: cnArr });
     }
   });
   return arr;
@@ -357,73 +399,94 @@ fileUpload.onchange = function (e) {
   reader.readAsText(file);
 };
 
-// 卡片切换动画
-function showCard(callback){
-  cardWrap.classList.add("fade-out");
-  setTimeout(()=>{
-    callback();
-    cardWrap.classList.remove("fade-out");
-  },350);
+function resetDisplay() {
+  clearTimeout(answerTimer);
+  answerTip.textContent = "";
+  answerTip.className = "";
+  answerShown = false;
 }
 
-// 加载单词逻辑
-function loadWord() {
+function showCardAfterAnimation(direction, callback) {
+  cardInner.classList.add(direction === "next" ? "fly-left" : "fly-right");
+
+  setTimeout(() => {
+    callback();
+    cardInner.classList.remove("fly-left", "fly-right");
+  }, 320);
+}
+
+function loadWord(direction = "next") {
   resetDisplay();
+
   if (currentWordIndex >= wordList.length) {
-    // 全部单词完成：对话气泡
-    playSound(audioVlogHum);
-    playSound(audioFinish);
-    wordTextDisplay.innerHTML = `
-      <div class="chat-box">
-        <div class="bubble-right">Well, I've finished.</div>
-        <div class="bubble-left">I knew it. You're the best.</div>
-      </div>`;
-    answerTip.textContent = "";
-    isRunning = false;
+    finishPractice();
     return;
   }
-  if(currentWordIndex < 0) currentWordIndex = 0;
+
+  if (currentWordIndex < 0) {
+    currentWordIndex = 0;
+  }
+
   const w = wordList[currentWordIndex];
 
-  switch (gameMode) {
-    case "listenWrite":
-      wordTextDisplay.textContent = "✍️ 写完点屏幕";
+  showCardAfterAnimation(direction, () => {
+    if (gameMode === "listenWrite") {
+      wordTextDisplay.textContent = "准备听并写";
       answerTip.textContent = "";
-      // 点击屏幕显示单词+释义
-      wordContainer.onclick = function showAnswer(){
+      speakText(w.en);
+
+      answerTimer = setTimeout(() => {
         wordTextDisplay.textContent = w.en;
         answerTip.innerHTML = renderMeaning(w.cn);
-        wordContainer.onclick = null;
-      }
-      break;
-    case "sayChinese":
+        answerShown = true;
+      }, 5000);
+    }
+
+    if (gameMode === "sayChinese") {
       wordTextDisplay.textContent = w.en;
       answerTip.textContent = "";
-      // 3秒后显示中文
-      timer = setTimeout(()=>{
+
+      answerTimer = setTimeout(() => {
         answerTip.innerHTML = renderMeaning(w.cn);
-      },3000);
-      wordContainer.onclick = null;
-      break;
-    case "sayEnglish":
-      wordTextDisplay.innerHTML = `<span class="cn2en-init-text">${renderMeaning(w.cn)}</span>`;
+        answerShown = true;
+      }, 5000);
+    }
+
+    if (gameMode === "sayEnglish") {
+      wordTextDisplay.innerHTML = `<span>${renderMeaning(w.cn)}</span>`;
       answerTip.textContent = "";
-      //3秒后显示英文
-      timer = setTimeout(()=>{
+
+      answerTimer = setTimeout(() => {
         wordTextDisplay.textContent = w.en;
-      },3000);
-      wordContainer.onclick = null;
-      break;
-  }
+        answerShown = true;
+      }, 5000);
+    }
+  });
 }
 
-// 底部按钮
-const startBtn = document.getElementById("startBtn");
-const lastBtn = document.getElementById("lastBtn");
-const nextBtn = document.getElementById("nextBtn");
-const againBtn = document.getElementById("againBtn");
-const scoreBtn = document.getElementById("scoreBtn");
-const fullBtn = document.getElementById("fullBtn");
+function goNext() {
+  if (!isRunning) return;
+  currentWordIndex++;
+  loadWord("next");
+}
+
+function goLast() {
+  if (!isRunning) return;
+  currentWordIndex--;
+  loadWord("last");
+}
+
+function finishPractice() {
+  isRunning = false;
+  resetDisplay();
+
+  wordTextDisplay.innerHTML = `
+    <div class="chat-box">
+      <div class="bubble-right">Well, I've finished.</div>
+      <div class="bubble-left">I knew it. You're the best.</div>
+    </div>`;
+  answerTip.textContent = "";
+}
 
 startBtn.onclick = () => {
   wordList = parseWords();
@@ -434,33 +497,16 @@ startBtn.onclick = () => {
   isRunning = true;
   currentWordIndex = 0;
   modeTag.textContent = modeNames[gameMode];
-  showCard(()=> loadWord());
+  loadWord("next");
 };
 
-lastBtn.onclick = () => {
-  if(!isRunning) return;
-  currentWordIndex--;
-  showCard(()=> loadWord());
-};
+lastBtn.onclick = goLast;
+nextBtn.onclick = goNext;
 
-nextBtn.onclick = () => {
-  if(!isRunning) return;
-  currentWordIndex++;
-  showCard(()=> loadWord());
-};
-
-againBtn.onclick = () => {
-  if(!isRunning) return;
-  currentWordIndex = 0;
-  showCard(()=> loadWord());
-};
-
-scoreBtn.onclick = () => {
-  if(wordList.length ===0){
-    alert("还没有导入单词");
-    return;
+finishBtn.onclick = () => {
+  if (isRunning) {
+    finishPractice();
   }
-  alert(`当前进度：${currentWordIndex+1} / ${wordList.length}`);
 };
 
 fullBtn.onclick = async () => {
@@ -479,6 +525,42 @@ document.addEventListener("click", (e) => {
   if (!settingPanel.contains(e.target) && e.target !== settingBtn) {
     settingPanel.classList.remove("show");
   }
+});
+
+/* 卡片左滑右滑 */
+let startX = 0;
+let currentX = 0;
+let dragging = false;
+
+wordCard.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+  dragging = true;
+  cardInner.classList.add("dragging");
+}, { passive: true });
+
+wordCard.addEventListener("touchmove", e => {
+  if (!dragging) return;
+  currentX = e.touches[0].clientX;
+  const diff = currentX - startX;
+  cardInner.style.transform = `translateX(${diff}px)`;
+}, { passive: true });
+
+wordCard.addEventListener("touchend", () => {
+  if (!dragging) return;
+  dragging = false;
+  cardInner.classList.remove("dragging");
+
+  const diff = currentX - startX;
+
+  if (diff < -60) {
+    goNext();
+  } else if (diff > 60) {
+    goLast();
+  }
+
+  setTimeout(() => {
+    cardInner.style.transform = "";
+  }, 320);
 });
 </script>
 </body>
