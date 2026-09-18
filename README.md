@@ -1,0 +1,1 @@
+EASYWORD单词工具
