@@ -1,504 +1,623 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>单词练习工具</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="white">
-<meta name="apple-mobile-web-app-title" content="单词练习">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>单词卡片</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23007aff'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EW%3C/text%3E%3C/svg%3E">
 <style>
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
 }
-
 html, body {
-  background-color: #ffffff;
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100%;
 }
-
 body {
-  padding: 16px;
-  padding-bottom: 120px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 4mm;
+  background: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
 }
-
-.app-wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding-top: 8px;
-}
-
 .mode-tag {
-  display: inline-block;
-  background: #007AFF;
-  color: #ffffff;
-  font-family: system-ui, sans-serif;
-  font-size: 14px;
-  padding: 6px 14px;
+  position: relative;
+  width: 100%;
+  background: #007aff;
+  border: 2px solid #007aff;
+  color: white;
+  height: 1cm;
+  line-height: 1cm;
   border-radius: 999px;
-  letter-spacing: 1px;
-  margin-bottom: 14px;
-}
-
-/* 中间单词卡片，页面加载就可见 */
-.word-card {
-  background: #ffffff;
-  border-radius: 28px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  padding: 48px 20px;
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  font-size: 18px;
   text-align: center;
-  position: relative;
+  white-space: nowrap;
   overflow: hidden;
 }
-
-.card-inner {
-  width: 100%;
+.mode-tag .progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: #fff;
+  z-index: 1;
+  transition: width 0.4s ease;
+}
+.mode-tag .tag-blue {
+  position: relative;
+  z-index: 2;
+  line-height: 1cm;
+  text-align: center;
+  color: #007aff;
+}
+.card-stack {
+  background: #f5f5f7;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  padding: 20px;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.35s ease, opacity 0.35s ease;
-  will-change: transform;
 }
-
-.card-inner.dragging {
-  transition: none;
-}
-
-.card-inner.fly-left {
-  transform: translateX(-120%) rotate(-3deg);
-  opacity: 0;
-}
-
-.card-inner.fly-right {
-  transform: translateX(120%) rotate(3deg);
-  opacity: 0;
-}
-
-#wordTextDisplay {
-  font-size: clamp(40px, 11vw, 96px);
-  color: #000000;
-  font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  line-height: 1.2;
-}
-
-#answerTip {
-  margin-top: 16px;
-  font-size: clamp(20px, 5vw, 32px);
-  color: #000000;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  line-height: 1.4;
-}
-
-/* 底部操作栏 */
-.bottom-dock {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 16px;
-  background: #ffffff;
-  border-radius: 24px;
-  padding: 10px 12px;
-  display: flex;
-  gap: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-  z-index: 50;
-}
-
-.dock-btn {
-  width: 54px;
-  height: 54px;
-  background: #ffffff;
-  border: 1px solid #f0f0f3;
-  border-radius: 16px;
-  color: #007AFF;
-  font-family: system-ui, sans-serif;
-  font-size: 11px;
+.word-en {
+  font-size: 56px;
   font-weight: bold;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.2s ease;
-}
-
-.dock-btn:active {
-  transform: scale(0.94);
-  background: #f2f2f7;
-}
-
-/* 设置面板 */
-.setting-panel {
-  position: fixed;
-  bottom: calc(16px + 70px + 10px);
-  right: 16px;
-  width: 220px;
-  max-width: 86vw;
-  background: #ffffff;
-  border: 1px solid #e5e5ea;
-  border-radius: 18px;
-  overflow: hidden;
-  display: none;
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.14);
-  z-index: 80;
-}
-
-.setting-panel.show {
-  display: block;
-}
-
-.setting-item {
-  padding: 14px 18px;
-  font-family: system-ui, sans-serif;
-  color: #000000;
-  font-size: 16px;
-  border-bottom: 1px solid #f1f1f3;
-  cursor: pointer;
+  text-align: center;
   white-space: nowrap;
+  max-width: 100%;
+  margin: 0 auto;
 }
-
-.setting-item:last-child {
-  border-bottom: none;
+.word-zh {
+  font-size: 32px;
+  color: #555;
+  margin-top: 16px;
+  text-align: center;
 }
-
-.import-area {
-  padding: 14px 18px;
+.ready-text {
+  font-size: 36px;
+  color: #007aff;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
 }
-
-.import-area textarea {
-  width: 100%;
-  height: 110px;
-  padding: 12px;
-  border: 1px solid #d2d2d7;
+.ready-hidden { display: none; }
+.done-hidden { display: none; }
+.bottom-dock {
+  height: 2cm;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  padding: 4px;
+}
+.bottom-dock button {
+  border: none;
+  background: transparent;
+  color: #007aff;
+  font-size: 15px;
   border-radius: 14px;
-  font-size: 14px;
-  outline: none;
-  margin-bottom: 10px;
-  font-family: inherit;
+  cursor: pointer;
 }
-
-.import-area input[type="file"] {
-  font-size: 13px;
-  color: #007AFF;
+.bottom-dock button:active {
+  background: #f0f0f5;
 }
-
-.chat-box {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  width: 100%;
-  padding: 10px;
+.confirm-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
 }
-
-.bubble-right {
-  position: relative;
-  align-self: flex-end;
-  background: #007AFF;
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: 18px 6px 18px 18px;
-  max-width: 72%;
-  font-size: 16px;
+.confirm-mask.show { display: flex; }
+.confirm-box {
+  background: #fff;
+  border-radius: 16px;
+  width: 280px;
+  overflow: hidden;
 }
-
-.bubble-right::after {
-  content: "";
-  position: absolute;
-  right: -8px;
-  bottom: 2px;
-  border-width: 8px 0 0 8px;
-  border-style: solid;
-  border-color: transparent transparent transparent #007AFF;
-}
-
-.bubble-left {
-  position: relative;
-  align-self: flex-start;
-  background: rgba(120, 120, 128, 0.12);
-  backdrop-filter: blur(10px);
+.confirm-msg {
+  padding: 24px 20px;
+  font-size: 17px;
+  text-align: center;
   color: #000;
-  padding: 12px 16px;
-  border-radius: 6px 18px 18px 18px;
-  max-width: 72%;
-  font-size: 16px;
 }
-
-.bubble-left::after {
-  content: "";
-  position: absolute;
-  left: -8px;
-  bottom: 2px;
-  border-width: 8px 8px 0 0;
-  border-style: solid;
-  border-color: transparent rgba(120, 120, 128, 0.12) transparent transparent;
+.confirm-btns {
+  display: flex;
+  border-top: 1px solid #e5e5e5;
+}
+.confirm-btns button {
+  flex: 1;
+  border: none;
+  background: #fff;
+  padding: 14px 0;
+  font-size: 17px;
+  color: #007aff;
+  cursor: pointer;
+}
+.confirm-btns button:first-child {
+  border-right: 1px solid #e5e5e5;
+}
+.confirm-btns button:active {
+  background: #f5f5f5;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  z-index: 100;
+}
+.overlay.show { display: block; }
+.panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  z-index: 101;
+}
+.panel.show { transform: translateY(0); }
+.mode-option {
+  padding: 16px 4px;
+  font-size: 18px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  color: #000;
+}
+.mode-option.active {
+  color: #007aff;
+  font-weight: 600;
+}
+.word-editor {
+  width: 100%;
+  min-height: 160px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+}
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.file-btn {
+  background: #eef1f5;
+  color: #007aff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.file-name {
+  color: #007aff;
+  font-size: 15px;
 }
 </style>
 </head>
-
 <body>
-<div class="app-wrap">
-  <div class="mode-tag" id="modeTag">准备开始</div>
-  <!-- 页面一加载就出现的中间白色圆角卡片 -->
-  <div class="word-card" id="wordCard">
-    <div class="card-inner" id="cardInner">
-      <div id="wordTextDisplay">准备开始</div>
-      <div id="answerTip"></div>
+
+<div class="mode-tag" id="modeTag">
+  <div class="progress-fill" id="progressFill"></div>
+  <span class="tag-blue" id="tagBlue">You are the best</span>
+</div>
+
+<div class="card-stack" id="cardBox">
+  <div class="word-en" id="wordEn"></div>
+  <div class="word-zh" id="wordZh"></div>
+  <div class="ready-text" id="readyText">Are you ready?</div>
+  <div class="done-heart" id="doneHeart">
+    <svg viewBox="0 0 24 24" fill="#007aff" width="200" height="200">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+</div>
+
+<div class="bottom-dock">
+  <button id="startBtn">START</button>
+  <button id="lastBtn">LAST</button>
+  <button id="nextBtn">NEXT</button>
+  <button id="answerBtn">答案</button>
+  <button id="memBtn">记忆</button>
+  <button id="settingBtn">设置</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="confirm-mask" id="confirmMask">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button id="confirmNo">Cancel</button>
+      <button id="confirmYes">Confirm</button>
     </div>
   </div>
 </div>
 
-<div class="setting-panel" id="settingPanel">
-  <div class="setting-item" id="importWord">导入单词</div>
-  <div class="setting-item" data-mode="listenWrite">LISTEN AND WRITE</div>
-  <div class="setting-item" data-mode="sayChinese">SAY CHINESE</div>
-  <div class="setting-item" data-mode="sayEnglish">SAY ENGLISH</div>
-  <div class="import-area" id="importBlock">
-    <textarea id="wordInput">apple,苹果|苹果树
-banana,香蕉
-cat,猫
-dog,狗
-book,书</textarea>
-    <input type="file" id="fileUpload" accept=".txt" />
+<div class="panel" id="panel">
+  <div class="mode-option" id="importBtn">导入单词</div>
+  <div class="mode-option" data-mode="listenWrite">LISTEN AND WRITE</div>
+  <div class="mode-option" data-mode="sayChinese">SAY CHINESE</div>
+  <div class="mode-option" data-mode="sayEnglish">SAY ENGLISH</div>
+  <textarea class="word-editor" id="wordEditor" spellcheck="false"></textarea>
+  <div class="file-row">
+    <button class="file-btn" id="pickFileBtn">选取文件</button>
+    <span class="file-name" id="fileName">未选择文件</span>
+    <input type="file" id="fileInput" accept=".txt,.xlsx,.xls,.csv,.docx" style="display:none">
   </div>
 </div>
 
-<div class="bottom-dock" id="dockWrap">
-  <button class="dock-btn" id="startBtn">START</button>
-  <button class="dock-btn" id="lastBtn">LAST</button>
-  <button class="dock-btn" id="nextBtn">NEXT</button>
-  <button class="dock-btn" id="finishBtn">FINISH</button>
-  <button class="dock-btn" id="fullBtn">全屏</button>
-  <button class="dock-btn" id="settingBtn">设置</button>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 <script>
-const modeTag = document.getElementById("modeTag");
-const wordCard = document.getElementById("wordCard");
-const cardInner = document.getElementById("cardInner");
-const wordTextDisplay = document.getElementById("wordTextDisplay");
-const answerTip = document.getElementById("answerTip");
-const settingBtn = document.getElementById("settingBtn");
-const settingPanel = document.getElementById("settingPanel");
-const importWordItem = document.getElementById("importWord");
-const importBlock = document.getElementById("importBlock");
-const wordInput = document.getElementById("wordInput");
-const fileUpload = document.getElementById("fileUpload");
-
-const startBtn = document.getElementById("startBtn");
-const lastBtn = document.getElementById("lastBtn");
-const nextBtn = document.getElementById("nextBtn");
-const finishBtn = document.getElementById("finishBtn");
-const fullBtn = document.getElementById("fullBtn");
-
 let wordList = [];
-let currentWordIndex = 0;
-let gameMode = "listenWrite";
-let isRunning = false;
-let answerTimer = null;
-let answerShown = false;
+let currentIndex = 0;
+let mode = "sayChinese";
+let timer = null;
+let started = false;
 
-const modeNames = {
-  listenWrite: "LISTEN AND WRITE",
+const modeTag = document.getElementById("modeTag");
+const tagBlue = document.getElementById("tagBlue");
+const progressFill = document.getElementById("progressFill");
+const wordEnEl = document.getElementById("wordEn");
+const wordZhEl = document.getElementById("wordZh");
+const panel = document.getElementById("panel");
+const overlay = document.getElementById("overlay");
+const wordEditor = document.getElementById("wordEditor");
+const fileInput = document.getElementById("fileInput");
+const fileNameEl = document.getElementById("fileName");
+const cardBox = document.getElementById("cardBox");
+const readyText = document.getElementById("readyText");
+const doneHeart = document.getElementById("doneHeart");
+
+const MODE_LABEL = {
   sayChinese: "SAY CHINESE",
-  sayEnglish: "SAY ENGLISH"
+  sayEnglish: "SAY ENGLISH",
+  listenWrite: "LISTEN AND WRITE"
 };
 
-function renderMeaning(arr) {
-  return arr.join("<br>");
+function speak(text){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  speechSynthesis.speak(utter);
 }
 
-function speakText(text) {
-  if (!("speechSynthesis" in window)) return;
+function setTag(text){
+  tagBlue.textContent = text;
+}
+function setProgress(pct){
+  progressFill.style.width = Math.max(0, Math.min(100, pct)) + "%";
+}
+
+function fitFontSize(el, maxSize = 56, minSize = 16){
+  el.style.fontSize = maxSize + "px";
+  const maxW = cardBox.clientWidth - 40;
+  while(el.scrollWidth > maxW && el.fontSize > minSize){
+    el.style.fontSize = (parseFloat(el.style.fontSize) - 4) + "px";
+  }
+}
+
+function showStartScreen(){
+  started = false;
+  if(timer) clearTimeout(timer);
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.rate = 0.9;
-  speechSynthesis.speak(u);
+  wordEnEl.textContent = "";
+  wordZhEl.textContent = "";
+  readyText.classList.remove("ready-hidden");
+  doneHeart.classList.add("done-hidden");
+  setTag("You are the best!");
+  setProgress(0);
 }
 
-settingBtn.onclick = () => {
-  settingPanel.classList.toggle("show");
-};
+function renderWord(){
+  if(!wordList.length) return;
+  const item = wordList[currentIndex];
+  readyText.classList.add("ready-hidden");
+  const pct = ((currentIndex + 1) / wordList.length) * 100;
+  setTag("You are the best!");
+  setProgress(pct);
 
-importWordItem.onclick = () => {
-  importBlock.style.display = importBlock.style.display === "none" ? "block" : "none";
-};
+  if(currentIndex === wordList.length - 1){
+    doneHeart.classList.remove("done-hidden");
+    wordEnEl.textContent = "";
+    wordZhEl.textContent = "";
+    if(timer) clearTimeout(timer);
+    speechSynthesis.cancel();
+    return;
+  }
+  doneHeart.classList.add("done-hidden");
 
-document.querySelectorAll(".setting-item[data-mode]").forEach(item => {
-  item.onclick = () => {
-    gameMode = item.dataset.mode;
-    modeTag.textContent = modeNames[gameMode];
-    settingPanel.classList.remove("show");
-    resetDisplay();
-  };
+  if(mode === "sayChinese"){
+    wordEnEl.textContent = item.en;
+    wordZhEl.textContent = "";
+    fitFontSize(wordEnEl);
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(()=>{
+      wordZhEl.textContent = item.zh;
+    }, 3000);
+  } else if(mode === "sayEnglish"){
+    wordEnEl.textContent = "";
+    wordZhEl.textContent = item.zh;
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(()=>{
+      wordEnEl.textContent = item.en;
+      fitFontSize(wordEnEl);
+    }, 3000);
+  } else if(mode === "listenWrite"){
+    wordEnEl.textContent = "";
+    wordZhEl.textContent = "";
+    speak(item.en);
+  }
+}
+
+cardBox.addEventListener("click", ()=>{
+  if(!started){
+    if(!wordList.length){
+      alert("请先在设置里导入单词");
+      return;
+    }
+    currentIndex = 0;
+    started = true;
+    renderWord();
+    return;
+  }
+  const item = wordList[currentIndex];
+  if(mode === "listenWrite"){
+    wordEnEl.textContent = item.en;
+    wordZhEl.textContent = item.zh;
+    fitFontSize(wordEnEl);
+  } else if(mode === "sayChinese"){
+    if(timer) clearTimeout(timer);
+    wordZhEl.textContent = item.zh;
+  } else if(mode === "sayEnglish"){
+    if(timer) clearTimeout(timer);
+    wordEnEl.textContent = item.en;
+  }
 });
 
-function parseWords() {
-  const lines = wordInput.value.trim().split("\n");
-  const arr = [];
-  lines.forEach(line => {
-    const sp = line.split(/[,，]/);
-    if (sp.length >= 2) {
-      const cnArr = sp[1].trim().split(/[|｜]/).map(s => s.trim());
-      arr.push({ en: sp[0].trim(), cn: cnArr });
-    }
-  });
-  return arr;
-}
+let touchStartX = 0;
+let touchStartY = 0;
+cardBox.addEventListener("touchstart", (e)=>{
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, {passive:true});
+cardBox.addEventListener("touchend", (e)=>{
+  if(!started || !wordList.length) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if(Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+  if(dx < 0){
+    currentIndex++;
+    if(currentIndex >= wordList.length) currentIndex = 0;
+    renderWord();
+  } else {
+    currentIndex--;
+    if(currentIndex < 0) currentIndex = wordList.length - 1;
+    renderWord();
+  }
+}, {passive:true});
 
-fileUpload.onchange = function (e) {
+function syncEditorFromList(){
+  wordEditor.value = wordList.map(w => w.en + "," + w.zh).join("\n");
+}
+function parseEditor(){
+  const lines = wordEditor.value.split(/\n/).map(s => s.trim()).filter(Boolean);
+  const list = [];
+  for(const line of lines){
+    let idx = line.indexOf(",");
+    if(idx < 0) idx = line.indexOf("，");
+    if(idx <= 0) continue;
+    list.push({ en: line.slice(0, idx).trim(), zh: line.slice(idx+1).trim() });
+  }
+  if(list.length){
+    wordList = list;
+    currentIndex = 0;
+  }
+  return list.length;
+}
+wordEditor.addEventListener("input", parseEditor);
+
+function refreshModeOptions(){
+  document.querySelectorAll(".mode-option").forEach(el => {
+    el.classList.toggle("active", el.dataset.mode === mode);
+  });
+}
+document.querySelectorAll(".mode-option").forEach(el => {
+  el.addEventListener("click", () => {
+    mode = el.dataset.mode;
+    refreshModeOptions();
+    closePanel();
+    currentIndex = 0;
+    showStartScreen();
+  });
+});
+
+function openPanel(){
+  syncEditorFromList();
+  refreshModeOptions();
+  overlay.classList.add("show");
+  panel.classList.add("show");
+}
+function closePanel(){
+  overlay.classList.remove("show");
+  panel.classList.remove("show");
+}
+overlay.addEventListener("click", closePanel);
+document.getElementById("settingBtn").addEventListener("click", openPanel);
+
+document.getElementById("importBtn").addEventListener("click", () => {
+  const n = parseEditor();
+  if(n === 0){
+    alert("没识别到单词，请按每行「英文,中文」的格式输入，例如：\napple,苹果\nbook,书");
+    return;
+  }
+  saveProgress();
+  closePanel();
+  currentIndex = 0;
+  showStartScreen();
+});
+
+document.getElementById("pickFileBtn").addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    wordInput.value = evt.target.result;
-  };
-  reader.readAsText(file);
-};
-
-function resetDisplay() {
-  clearTimeout(answerTimer);
-  answerTip.textContent = "";
-  answerShown = false;
-}
-
-function showCardAfterAnimation(direction, callback) {
-  cardInner.classList.add(direction === "next" ? "fly-left" : "fly-right");
-  setTimeout(() => {
-    callback();
-    cardInner.classList.remove("fly-left", "fly-right");
-  }, 320);
-}
-
-function loadWord(direction = "next") {
-  resetDisplay();
-  if (currentWordIndex >= wordList.length) {
-    finishPractice();
-    return;
-  }
-  if (currentWordIndex < 0) currentWordIndex = 0;
-  const w = wordList[currentWordIndex];
-
-  showCardAfterAnimation(direction, () => {
-    if (gameMode === "listenWrite") {
-      wordTextDisplay.textContent = "准备听并写";
-      answerTip.textContent = "";
-      speakText(w.en);
-      answerTimer = setTimeout(() => {
-        wordTextDisplay.textContent = w.en;
-        answerTip.innerHTML = renderMeaning(w.cn);
-        answerShown = true;
-      }, 5000);
-    } else if (gameMode === "sayChinese") {
-      wordTextDisplay.textContent = w.en;
-      answerTip.textContent = "";
-      answerTimer = setTimeout(() => {
-        answerTip.innerHTML = renderMeaning(w.cn);
-        answerShown = true;
-      }, 5000);
-    } else if (gameMode === "sayEnglish") {
-      wordTextDisplay.innerHTML = `<span>${renderMeaning(w.cn)}</span>`;
-      answerTip.textContent = "";
-      answerTimer = setTimeout(() => {
-        wordTextDisplay.textContent = w.en;
-        answerShown = true;
-      }, 5000);
-    }
-  });
-}
-
-function goNext() {
-  if (!isRunning) return;
-  currentWordIndex++;
-  loadWord("next");
-}
-
-function goLast() {
-  if (!isRunning) return;
-  currentWordIndex--;
-  loadWord("last");
-}
-
-function finishPractice() {
-  isRunning = false;
-  resetDisplay();
-  wordTextDisplay.innerHTML = `
-    <div class="chat-box">
-      <div class="bubble-right">Well, I've finished.</div>
-      <div class="bubble-left">I knew it. You're the best.</div>
-    </div>`;
-  answerTip.textContent = "";
-}
-
-startBtn.onclick = () => {
-  wordList = parseWords();
-  if (wordList.length === 0) {
-    alert("请先导入单词！");
-    return;
-  }
-  isRunning = true;
-  currentWordIndex = 0;
-  modeTag.textContent = modeNames[gameMode];
-  loadWord("next");
-};
-
-lastBtn.onclick = goLast;
-nextBtn.onclick = goNext;
-finishBtn.onclick = () => {
-  if (isRunning) finishPractice();
-};
-
-fullBtn.onclick = async () => {
+  if(!file) return;
+  fileNameEl.textContent = file.name;
+  const ext = file.name.split(".").pop().toLowerCase();
   try {
-    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-    else await document.exitFullscreen();
-  } catch (e) {
-    alert("全屏切换失败");
-  }
-};
-
-document.addEventListener("click", (e) => {
-  if (!settingPanel.contains(e.target) && e.target !== settingBtn) {
-    settingPanel.classList.remove("show");
+    if(ext === "txt" || ext === "csv"){
+      const text = await file.text();
+      wordEditor.value = text;
+      parseEditor();
+      currentIndex = 0;
+      showStartScreen();
+    } else if(ext === "xlsx" || ext === "xls"){
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      const lines = rows.filter(r => r[0]).map(r => r[0] + "," + (r[1]||""));
+      wordEditor.value = lines.join("\n");
+      parseEditor();
+      currentIndex = 0;
+      showStartScreen();
+    } else if(ext === "docx"){
+      const data = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({arrayBuffer: data});
+      wordEditor.value = result.text;
+      parseEditor();
+      currentIndex = 0;
+      showStartScreen();
+    }
+  } catch(err){
+    alert("文件解析失败：" + err.message);
   }
 });
 
-// 卡片左右滑动手势
-let startX = 0;
-let currentX = 0;
-let dragging = false;
-wordCard.addEventListener("touchstart", e => {
-  startX = e.touches[0].clientX;
-  dragging = true;
-  cardInner.classList.add("dragging");
-}, { passive: true });
-
-wordCard.addEventListener("touchmove", e => {
-  if (!dragging) return;
-  currentX = e.touches[0].clientX;
-  const diff = currentX - startX;
-  cardInner.style.transform = `translateX(${diff}px)`;
-}, { passive: true });
-
-wordCard.addEventListener("touchend", () => {
-  if (!dragging) return;
-  dragging = false;
-  cardInner.classList.remove("dragging");
-  const diff = currentX - startX;
-  if (diff < -60) goNext();
-  else if (diff > 60) goLast();
-  setTimeout(() => {
-    cardInner.style.transform = "";
-  }, 320);
+document.getElementById("startBtn").addEventListener("click", () => {
+  if(!wordList.length){
+    alert("请先在设置里导入单词");
+    return;
+  }
+  currentIndex = 0;
+  started = true;
+  renderWord();
 });
+readyText.addEventListener("click", () => {
+  if(!wordList.length){
+    alert("请先在设置里导入单词");
+    return;
+  }
+  currentIndex = 0;
+  started = true;
+  renderWord();
+});
+document.getElementById("nextBtn").addEventListener("click", () => {
+  if(!wordList.length || !started) return;
+  currentIndex++;
+  if(currentIndex >= wordList.length) currentIndex = 0;
+  renderWord();
+});
+document.getElementById("lastBtn").addEventListener("click", () => {
+  if(!wordList.length || !started) return;
+  currentIndex--;
+  if(currentIndex < 0) currentIndex = wordList.length - 1;
+  renderWord();
+});
+document.getElementById("answerBtn").addEventListener("click", () => {
+  if(!wordList.length || !started) return;
+  if(timer) clearTimeout(timer);
+  wordEnEl.textContent = wordList[currentIndex].en;
+  wordZhEl.textContent = wordList[currentIndex].zh;
+  fitFontSize(wordEnEl);
+});
+
+function saveProgress(){
+  try{
+    localStorage.setItem("wordApp_data", JSON.stringify({
+      index: currentIndex,
+      mode: mode,
+      words: wordList
+    }));
+  }catch(e){}
+}
+function loadProgress(){
+  try{
+    const s = localStorage.getItem("wordApp_data");
+    if(s){
+      const d = JSON.parse(s);
+      if(d.mode) mode = d.mode;
+      if(typeof d.index === "number") currentIndex = d.index;
+      if(Array.isArray(d.words) && d.words.length) wordList = d.words;
+    }
+  }catch(e){}
+}
+
+const confirmMask = document.getElementById("confirmMask");
+const confirmMsg = document.getElementById("confirmMsg");
+let confirmResolver = null;
+function myConfirm(text){
+  confirmMsg.textContent = text;
+  confirmMask.classList.add("show");
+  return new Promise(resolve => { confirmResolver = resolve; });
+}
+document.getElementById("confirmNo").addEventListener("click", () => {
+  confirmMask.classList.remove("show");
+  if(confirmResolver) confirmResolver(false);
+});
+document.getElementById("confirmYes").addEventListener("click", () => {
+  confirmMask.classList.remove("show");
+  if(confirmResolver) confirmResolver(true);
+});
+
+document.getElementById("memBtn").addEventListener("click", async () => {
+  try{
+    const s = localStorage.getItem("wordApp_data");
+    if(s){
+      const ok = await myConfirm("是否从上次学习进度开始？");
+      if(ok){
+        const d = JSON.parse(s);
+        if(d.mode) mode = d.mode;
+        if(typeof d.index === "number") currentIndex = d.index;
+        if(Array.isArray(d.words) && d.words.length) wordList = d.words;
+        started = true;
+        renderWord();
+      } else {
+        localStorage.removeItem("wordApp_data");
+        currentIndex = 0;
+        showStartScreen();
+      }
+      return;
+    }
+  }catch(e){}
+  const ok2 = await myConfirm("是否保存当前学习进度？");
+  if(ok2) saveProgress();
+});
+
+loadProgress();
+showStartScreen();
 </script>
 </body>
 </html>
