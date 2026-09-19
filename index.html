@@ -3,8 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>单词卡片</title>
+<title>EasyWord</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23007aff'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EW%3C/text%3E%3C/svg%3E">
+
+<!-- ========= iOS 添加主屏幕设置 ========= -->
+<meta name="apple-mobile-web-app-title" content="EasyWord">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- 👇这里修改：替换成你的 apple-touch-icon.png raw链接 -->
+<link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/你的用户名/仓库名/main/apple-touch-icon.png?v=1">
+<!-- ====================================== -->
+
 <style>
 * {
   box-sizing: border-box;
@@ -24,35 +33,15 @@ body {
   gap: 4mm;
 }
 .mode-tag {
-  position: relative;
-  width: 100%;
+  align-self: flex-start;
   background: #007aff;
-  border: 2px solid #007aff;
   color: white;
-  height: 1cm;
-  line-height: 1cm;
+  padding: 0 20px;
   border-radius: 999px;
   font-size: 18px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.mode-tag .progress-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 0%;
-  background: #fff;
-  z-index: 1;
-  transition: width 0.4s ease;
-}
-.mode-tag .tag-blue {
-  position: relative;
-  z-index: 2;
+  height: 1cm;
   line-height: 1cm;
-  text-align: center;
-  color: #007aff;
+  white-space: nowrap;
 }
 .card-stack {
   background: #f5f5f7;
@@ -66,12 +55,10 @@ body {
   justify-content: center;
 }
 .word-en {
-  font-size: 56px;
+  font-size: 64px;
   font-weight: bold;
   text-align: center;
-  white-space: nowrap;
-  max-width: 100%;
-  margin: 0 auto;
+  word-break: break-word;
 }
 .word-zh {
   font-size: 32px;
@@ -84,16 +71,13 @@ body {
   color: #007aff;
   font-weight: 600;
   text-align: center;
-  cursor: pointer;
-  user-select: none;
 }
 .ready-hidden { display: none; }
-.done-hidden { display: none; }
 .bottom-dock {
   height: 2cm;
   background: #fff;
   border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0.08);
   border: 1px solid #eee;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -110,47 +94,6 @@ body {
 }
 .bottom-dock button:active {
   background: #f0f0f5;
-}
-.confirm-mask {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: none;
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-}
-.confirm-mask.show { display: flex; }
-.confirm-box {
-  background: #fff;
-  border-radius: 16px;
-  width: 280px;
-  overflow: hidden;
-}
-.confirm-msg {
-  padding: 24px 20px;
-  font-size: 17px;
-  text-align: center;
-  color: #000;
-}
-.confirm-btns {
-  display: flex;
-  border-top: 1px solid #e5e5e5;
-}
-.confirm-btns button {
-  flex: 1;
-  border: none;
-  background: #fff;
-  padding: 14px 0;
-  font-size: 17px;
-  color: #007aff;
-  cursor: pointer;
-}
-.confirm-btns button:first-child {
-  border-right: 1px solid #e5e5e5;
-}
-.confirm-btns button:active {
-  background: #f5f5f5;
 }
 .overlay {
   position: fixed;
@@ -220,20 +163,12 @@ body {
 </head>
 <body>
 
-<div class="mode-tag" id="modeTag">
-  <div class="progress-fill" id="progressFill"></div>
-  <span class="tag-blue" id="tagBlue">You are the best</span>
-</div>
+<div class="mode-tag" id="modeTag">准备开始</div>
 
 <div class="card-stack" id="cardBox">
   <div class="word-en" id="wordEn"></div>
-  <div class="word-zh" id="wordZh"></div>
+  <div class="wordZh" id="wordZh"></div>
   <div class="ready-text" id="readyText">Are you ready?</div>
-  <div class="done-heart" id="doneHeart">
-    <svg viewBox="0 0 24 24" fill="#007aff" width="200" height="200">
-      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-    </svg>
-  </div>
 </div>
 
 <div class="bottom-dock">
@@ -241,22 +176,11 @@ body {
   <button id="lastBtn">LAST</button>
   <button id="nextBtn">NEXT</button>
   <button id="answerBtn">答案</button>
-  <button id="memBtn">记忆</button>
+  <button id="fullBtn">全屏</button>
   <button id="settingBtn">设置</button>
 </div>
 
 <div class="overlay" id="overlay"></div>
-
-<div class="confirm-mask" id="confirmMask">
-  <div class="confirm-box">
-    <div class="confirm-msg" id="confirmMsg"></div>
-    <div class="confirm-btns">
-      <button id="confirmNo">Cancel</button>
-      <button id="confirmYes">Confirm</button>
-    </div>
-  </div>
-</div>
-
 <div class="panel" id="panel">
   <div class="mode-option" id="importBtn">导入单词</div>
   <div class="mode-option" data-mode="listenWrite">LISTEN AND WRITE</div>
@@ -280,8 +204,6 @@ let timer = null;
 let started = false;
 
 const modeTag = document.getElementById("modeTag");
-const tagBlue = document.getElementById("tagBlue");
-const progressFill = document.getElementById("progressFill");
 const wordEnEl = document.getElementById("wordEn");
 const wordZhEl = document.getElementById("wordZh");
 const panel = document.getElementById("panel");
@@ -291,7 +213,6 @@ const fileInput = document.getElementById("fileInput");
 const fileNameEl = document.getElementById("fileName");
 const cardBox = document.getElementById("cardBox");
 const readyText = document.getElementById("readyText");
-const doneHeart = document.getElementById("doneHeart");
 
 const MODE_LABEL = {
   sayChinese: "SAY CHINESE",
@@ -305,21 +226,6 @@ function speak(text){
   speechSynthesis.speak(utter);
 }
 
-function setTag(text){
-  tagBlue.textContent = text;
-}
-function setProgress(pct){
-  progressFill.style.width = Math.max(0, Math.min(100, pct)) + "%";
-}
-
-function fitFontSize(el, maxSize = 56, minSize = 16){
-  el.style.fontSize = maxSize + "px";
-  const maxW = cardBox.clientWidth - 40;
-  while(el.scrollWidth > maxW && el.fontSize > minSize){
-    el.style.fontSize = (parseFloat(el.style.fontSize) - 4) + "px";
-  }
-}
-
 function showStartScreen(){
   started = false;
   if(timer) clearTimeout(timer);
@@ -327,46 +233,32 @@ function showStartScreen(){
   wordEnEl.textContent = "";
   wordZhEl.textContent = "";
   readyText.classList.remove("ready-hidden");
-  doneHeart.classList.add("done-hidden");
-  setTag("You are the best!");
-  setProgress(0);
+  modeTag.textContent = MODE_LABEL[mode] || "准备开始";
 }
 
 function renderWord(){
   if(!wordList.length) return;
   const item = wordList[currentIndex];
   readyText.classList.add("ready-hidden");
-  const pct = ((currentIndex + 1) / wordList.length) * 100;
-  setTag("You are the best!");
-  setProgress(pct);
-
-  if(currentIndex === wordList.length - 1){
-    doneHeart.classList.remove("done-hidden");
-    wordEnEl.textContent = "";
-    wordZhEl.textContent = "";
-    if(timer) clearTimeout(timer);
-    speechSynthesis.cancel();
-    return;
-  }
-  doneHeart.classList.add("done-hidden");
 
   if(mode === "sayChinese"){
+    modeTag.textContent = MODE_LABEL.sayChinese;
     wordEnEl.textContent = item.en;
     wordZhEl.textContent = "";
-    fitFontSize(wordEnEl);
     if(timer) clearTimeout(timer);
     timer = setTimeout(()=>{
       wordZhEl.textContent = item.zh;
     }, 3000);
   } else if(mode === "sayEnglish"){
+    modeTag.textContent = MODE_LABEL.sayEnglish;
     wordEnEl.textContent = "";
     wordZhEl.textContent = item.zh;
     if(timer) clearTimeout(timer);
     timer = setTimeout(()=>{
       wordEnEl.textContent = item.en;
-      fitFontSize(wordEnEl);
     }, 3000);
   } else if(mode === "listenWrite"){
+    modeTag.textContent = MODE_LABEL.listenWrite;
     wordEnEl.textContent = "";
     wordZhEl.textContent = "";
     speak(item.en);
@@ -374,51 +266,13 @@ function renderWord(){
 }
 
 cardBox.addEventListener("click", ()=>{
-  if(!started){
-    if(!wordList.length){
-      alert("请先在设置里导入单词");
-      return;
-    }
-    currentIndex = 0;
-    started = true;
-    renderWord();
-    return;
-  }
-  const item = wordList[currentIndex];
-  if(mode === "listenWrite"){
+  if(!started) return;
+  if(mode === "listenWrite" && wordList.length){
+    const item = wordList[currentIndex];
     wordEnEl.textContent = item.en;
     wordZhEl.textContent = item.zh;
-    fitFontSize(wordEnEl);
-  } else if(mode === "sayChinese"){
-    if(timer) clearTimeout(timer);
-    wordZhEl.textContent = item.zh;
-  } else if(mode === "sayEnglish"){
-    if(timer) clearTimeout(timer);
-    wordEnEl.textContent = item.en;
   }
 });
-
-let touchStartX = 0;
-let touchStartY = 0;
-cardBox.addEventListener("touchstart", (e)=>{
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, {passive:true});
-cardBox.addEventListener("touchend", (e)=>{
-  if(!started || !wordList.length) return;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if(Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
-  if(dx < 0){
-    currentIndex++;
-    if(currentIndex >= wordList.length) currentIndex = 0;
-    renderWord();
-  } else {
-    currentIndex--;
-    if(currentIndex < 0) currentIndex = wordList.length - 1;
-    renderWord();
-  }
-}, {passive:true});
 
 function syncEditorFromList(){
   wordEditor.value = wordList.map(w => w.en + "," + w.zh).join("\n");
@@ -445,7 +299,7 @@ function refreshModeOptions(){
     el.classList.toggle("active", el.dataset.mode === mode);
   });
 }
-document.querySelectorAll(".mode-option").forEach(el => {
+document.querySelectorAll(".mode-option[data-mode]").forEach(el => {
   el.addEventListener("click", () => {
     mode = el.dataset.mode;
     refreshModeOptions();
@@ -474,7 +328,6 @@ document.getElementById("importBtn").addEventListener("click", () => {
     alert("没识别到单词，请按每行「英文,中文」的格式输入，例如：\napple,苹果\nbook,书");
     return;
   }
-  saveProgress();
   closePanel();
   currentIndex = 0;
   showStartScreen();
@@ -525,15 +378,6 @@ document.getElementById("startBtn").addEventListener("click", () => {
   started = true;
   renderWord();
 });
-readyText.addEventListener("click", () => {
-  if(!wordList.length){
-    alert("请先在设置里导入单词");
-    return;
-  }
-  currentIndex = 0;
-  started = true;
-  renderWord();
-});
 document.getElementById("nextBtn").addEventListener("click", () => {
   if(!wordList.length || !started) return;
   currentIndex++;
@@ -548,76 +392,21 @@ document.getElementById("lastBtn").addEventListener("click", () => {
 });
 document.getElementById("answerBtn").addEventListener("click", () => {
   if(!wordList.length || !started) return;
-  if(timer) clearTimeout(timer);
-  wordEnEl.textContent = wordList[currentIndex].en;
-  wordZhEl.textContent = wordList[currentIndex].zh;
-  fitFontSize(wordEnEl);
+  if(mode === "listenWrite"){
+    wordEnEl.textContent = wordList[currentIndex].en;
+    wordZhEl.textContent = wordList[currentIndex].zh;
+  }
+});
+document.getElementById("fullBtn").addEventListener("click", () => {
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
 });
 
-function saveProgress(){
-  try{
-    localStorage.setItem("wordApp_data", JSON.stringify({
-      index: currentIndex,
-      mode: mode,
-      words: wordList
-    }));
-  }catch(e){}
-}
-function loadProgress(){
-  try{
-    const s = localStorage.getItem("wordApp_data");
-    if(s){
-      const d = JSON.parse(s);
-      if(d.mode) mode = d.mode;
-      if(typeof d.index === "number") currentIndex = d.index;
-      if(Array.isArray(d.words) && d.words.length) wordList = d.words;
-    }
-  }catch(e){}
-}
-
-const confirmMask = document.getElementById("confirmMask");
-const confirmMsg = document.getElementById("confirmMsg");
-let confirmResolver = null;
-function myConfirm(text){
-  confirmMsg.textContent = text;
-  confirmMask.classList.add("show");
-  return new Promise(resolve => { confirmResolver = resolve; });
-}
-document.getElementById("confirmNo").addEventListener("click", () => {
-  confirmMask.classList.remove("show");
-  if(confirmResolver) confirmResolver(false);
-});
-document.getElementById("confirmYes").addEventListener("click", () => {
-  confirmMask.classList.remove("show");
-  if(confirmResolver) confirmResolver(true);
-});
-
-document.getElementById("memBtn").addEventListener("click", async () => {
-  try{
-    const s = localStorage.getItem("wordApp_data");
-    if(s){
-      const ok = await myConfirm("是否从上次学习进度开始？");
-      if(ok){
-        const d = JSON.parse(s);
-        if(d.mode) mode = d.mode;
-        if(typeof d.index === "number") currentIndex = d.index;
-        if(Array.isArray(d.words) && d.words.length) wordList = d.words;
-        started = true;
-        renderWord();
-      } else {
-        localStorage.removeItem("wordApp_data");
-        currentIndex = 0;
-        showStartScreen();
-      }
-      return;
-    }
-  }catch(e){}
-  const ok2 = await myConfirm("是否保存当前学习进度？");
-  if(ok2) saveProgress();
-});
-
-loadProgress();
 showStartScreen();
 </script>
 </body>
 </html>
+
